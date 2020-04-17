@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .s_box {
+      width: 400px;
+      height: 300px;
+      position: absolute;
+      left: 50px;
+      top: 100px;
+    }
+    .s_box img {
+      width: 400px;
+      height: 300px;
+    }
+    .s_box span {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 134px;
+      height: 80px;
+      /* background: rgba(200, 200, 200, 0.5); */
+      background: url(img/01.jpg);
+      background-size: 400px 300px;
+      display: none;
+    }
+    .b_box {
+      width: 400px;
+      height: 300px;
+      position: absolute;
+      top: 100px;
+      left: 500px;
+      border: solid 1px black;
+      overflow: hidden;
+      display: none;
+    }
+    .b_box img {
+      position: absolute;
+      width: 1200px;
+      height: 900px;
+    }
+  </style>
+</head>
+<body>
+   <div class="s_box">
+     <img src="img/01.jpg"/>
+     <span></span>
+   </div>
+   <div class="b_box">
+     <img src="img/01.jpg" />
+   </div>
+</body>
+<script>
+  // OOA:放大镜：鼠标进入左边的区域，右边的区域显示大图
+  //     1.选择元素
+  //     2.绑定事件，进入，移动，离开
+  //     3.进入：显示
+  //     4.移动：1.span跟随鼠标移动 2.计算比例 3.根据比例移动右边大图
+  //     5.离开：隐藏
+
+  function Magnifier() {
+    // 1.选择元素
+    this.sBox = document.querySelector(".s_box");
+    this.span = document.querySelector(".s_box span");
+    this.sImg = document.querySelector(".s_box img")
+    this.bBox = document.querySelector(".b_box");
+    this.bImg = this.bBox.children[0];
+
+    // 2.绑定事件：进入，移动，离开
+    this.init();
+  }
+
+  Magnifier.prototype.show = function() {
+    // 显示
+    this.span.style.display = "block";
+    this.bBox.style.display = "block";
+    this.sImg.style.opacity = 0.6;
+  }
+
+  Magnifier.prototype.hide = function() {
+    // 隐藏
+    this.span.style.display = "none";
+    this.bBox.style.display = "none";
+    this.sImg.style.opacity = 1;
+  }
+
+  Magnifier.prototype.move = function(pos) {
+    // 移动
+    var l = pos.x - this.span.offsetWidth/2;
+    var t = pos.y - this.span.offsetHeight/2;
+    // 边界限定
+    if(l < 0) l = 0;
+    if(t < 0) t = 0;
+    (l > this.sBox.offsetWidth - this.span.offsetWidth) && 
+    (l = this.sBox.offsetWidth - this.span.offsetWidth);
+    (t > this.sBox.offsetHeight - this.span.offsetHeight) &&
+    (t = this.sBox.offsetHeight - this.span.offsetHeight);
+
+    // span的移动
+    this.span.style.left = l + "px";
+    this.span.style.top = t + "px";
+
+    // 计算比例
+    var x = l / (this.sBox.offsetWidth - this.span.offsetWidth);
+    var y = t / (this.sBox.offsetHeight - this.span.offsetHeight);
+    console.log(x,y)
+    // 根据比例移动大图
+    this.bImg.style.left = x * (this.bBox.offsetWidth - this.bImg.offsetWidth) + "px";
+    this.bImg.style.top = y * (this.bBox.offsetHeight - this.bImg.offsetHeight) + "px";
+
+    // 将span的背景图的位置设置成当前span的位置
+    this.span.style.backgroundPosition = -l + "px " + -t + "px";
+  }
+
+  Magnifier.prototype.init = function() {
+    var that = this;
+    // 进入
+    this.sBox.onmouseover = function() {
+      //    显示元素
+      that.show(); 
+      // 移动
+      this.onmousemove = function(eve) {
+        var e = eve || window.event;
+        // e.pageX - this.offsetLeft === e.offsetX
+        // e.pageY - this.offsetTop === e.offsetY
+        that.move({
+          x:e.pageX - this.offsetLeft,
+          y:e.pageY - this.offsetTop
+        });
+      }
+    }
+    this.sBox.onmouseout = function() {
+      // 离开
+      //    隐藏元素
+      that.hide();
+    }
+    
+  }
+
+  new Magnifier();
+</script>
+</html>
